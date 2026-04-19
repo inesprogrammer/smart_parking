@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f0f4ff;
+      --surface2: #e0e8ff;
+      --border: #b3c6ff;
+      --accent: #0000ff;
+      --accent2: #0033cc;
+      --accent-light: rgba(0,0,255,0.08);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #001080;
+      --muted: #4466bb;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      background: #0000ff;
+      padding: 0;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,255,0.2);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+    }
+
+    .header-text p {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: 2px;
+    }
+
+    .badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #ffffff;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* Upload card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,255,0.06);
+    }
+
+    .card-title {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      background: white;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    .upload-zone h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .upload-zone p {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* Preview */
+    #preview-container {
+      display: none;
+      margin-top: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      max-height: 280px;
+      border: 2px solid var(--border);
+    }
+
+    #preview-container img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Controls row */
+    .controls {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      margin-top: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-weight: 700;
+    }
+
+    .form-group input[type="number"] {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      font-family: var(--mono);
+      width: 120px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      padding: 11px 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #0000ff;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #0000cc;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,255,0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #0000ff;
+      border: 2px solid #0000ff;
+    }
+
+    .btn-outline:hover {
+      background: rgba(0,0,255,0.08);
+    }
+
+    /* Loading */
+    #loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border: 2px solid var(--border);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: #0000ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-family: var(--mono);
+    }
+
+    /* Results section */
+    #results { display: none; }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,255,0.06);
+    }
+
+    .stat-card.highlight {
+      border-color: #0000ff;
+      background: rgba(0,0,255,0.05);
+    }
+
+    .stat-number {
+      font-family: var(--mono);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .color-green { color: #0000ff; }
+    .color-blue  { color: #0033cc; }
+    .color-orange{ color: var(--warning); }
+    .color-red   { color: var(--danger); }
+
+    /* Annotated image */
+    .result-image-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .result-image-wrap img {
+      width: 100%;
+      display: block;
+      max-height: 520px;
+      object-fit: contain;
+      background: #f0f4ff;
+    }
+
+    /* Cars table */
+    .table-wrapper { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead tr {
+      background: #0000ff;
+    }
+
+    th {
+      text-align: left;
+      padding: 11px 14px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ffffff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f0f4ff; }
+    tr:hover td { background: rgba(0,0,255,0.05); }
+
+    .color-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+
+    .plate-badge {
+      font-family: var(--mono);
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: #0000ff;
+      font-weight: 700;
+    }
+
+    .conf-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .conf-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      max-width: 80px;
+    }
+
+    .conf-fill {
+      height: 100%;
+      background: #0000ff;
+      border-radius: 3px;
+    }
+
+    /* Downloads */
+    .download-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+
+    .alert-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #dc2626;
+    }
+
+    #error-msg { display: none; }
+
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .controls { flex-direction: column; align-items: stretch; }
+      .form-group input[type="number"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">🅿️</div>
+      <div class="header-text">
+        <h1>Smart Parking System</h1>
+        <p>YOLOv8 · EasyOCR · Color Detection · Flask</p>
+      </div>
+      <span class="badge">v1.0</span>
+    </div>
+  </header>
+
+<div class="container">
+
+  <!-- Upload card -->
+  <div class="card">
+    <div class="card-title">Upload Parking Image</div>
+
+    <div class="upload-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="image/*">
+      <div class="upload-icon">📷</div>
+      <h3>Drop an image here or click to browse</h3>
+      <p>Supports JPG, PNG, BMP, WebP — max 16 MB</p>
+    </div>
+
+    <div id="preview-container">
+      <img id="preview-img" src="" alt="Preview">
+    </div>
+
+    <div id="error-msg" class="alert alert-error">
+      <span id="error-text"></span>
+    </div>
+
+    <div class="controls">
+      <div class="form-group">
+        <label>Total Parking Spaces</label>
+      <input type="number" id="spaces-input" value="30" min="30" max="30" readonly style="opacity:0.6; cursor:not-allowed;">
+      </div>
+      <button class="btn btn-primary" id="analyze-btn" disabled onclick="analyzeImage()">
+        <span>🔍</span> Analyze
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="card">
+    <div class="spinner"></div>
+    <p>Running YOLO + OCR + color detection…</p>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number color-blue" id="stat-total">—</div>
+        <div class="stat-label">Total Spaces</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number color-red" id="stat-occupied">—</div>
+        <div class="stat-label">Occupied</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="stat-number color-green" id="stat-free">—</div>
+        <div class="stat-label">Free Spaces</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number color-orange" id="stat-cars">—</div>
+        <div class="stat-label">Cars Detected</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Annotated Output</div>
+      <div class="result-image-wrap">
+        <img id="result-img" src="" alt="Annotated parking image">
+      </div>
+    </div>
+
+    <div class="card" id="cars-card">
+      <div class="card-title">Detected Vehicles</div>
+      <div class="table-wrapper">
+        <table id="cars-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>Color</th>
+              <th>Plate</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody id="cars-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="download-row">
+        <a id="download-img-btn" href="#" class="btn btn-outline">⬇ Download Image</a>
+        <a id="download-csv-btn" href="#" class="btn btn-outline">📄 Download CSV</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const fileInput = document.getElementById('file-input');
+  const dropZone = document.getElementById('drop-zone');
+  const previewContainer = document.getElementById('preview-container');
+  const previewImg = document.getElementById('preview-img');
+  const analyzeBtn = document.getElementById('analyze-btn');
+  const loadingEl = document.getElementById('loading');
+  const resultsEl = document.getElementById('results');
+  const errorMsg = document.getElementById('error-msg');
+  const errorText = document.getElementById('error-text');
+
+  let selectedFile = null;
+
+  const COLOR_MAP = {
+    red: '#ef4444', orange: '#f97316', yellow: '#eab308',
+    green: '#22c55e', blue: '#3b82f6', purple: '#a855f7',
+    pink: '#ec4899', white: '#f1f5f9', gray: '#94a3b8',
+    black: '#1e293b', unknown: '#64748b'
+  };
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+
+  function handleFile(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      previewContainer.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    analyzeBtn.disabled = false;
+    hideError();
+    resultsEl.style.display = 'none';
+  }
+
+  function showError(msg) {
+    errorText.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+
+  function hideError() {
+    errorMsg.style.display = 'none';
+  }
+
+  async function analyzeImage() {
+    if (!selectedFile) return;
+    hideError();
+
+    const spaces = parseInt(document.getElementById('spaces-input').value) || 10;
+
+    loadingEl.style.display = 'block';
+    resultsEl.style.display = 'none';
+    analyzeBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    formData.append('spaces', spaces);
+
+    try {
+      const response = await fetch('/analyze', { method: 'POST', body: formData });
+      const data = await response.json();
+
+      loadingEl.style.display = 'none';
+      analyzeBtn.disabled = false;
+
+      if (!response.ok || data.error) {
+        showError(data.error || 'Detection failed. Please try another image.');
+        return;
+      }
+
+      displayResults(data);
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      analyzeBtn.disabled = false;
+      showError('Network error. Is the Flask server running?');
+    }
+  }
+
+  function displayResults(data) {
+    document.getElementById('stat-total').textContent = data.total_spaces;
+    document.getElementById('stat-occupied').textContent = data.occupied_spaces;
+    document.getElementById('stat-free').textContent = data.free_spaces;
+    document.getElementById('stat-cars').textContent = data.car_count;
+
+    document.getElementById('result-img').src = 'data:image/jpeg;base64,' + data.annotated_image_b64;
+
+    const tbody = document.getElementById('cars-tbody');
+    tbody.innerHTML = '';
+
+    if (data.cars && data.cars.length > 0) {
+      data.cars.forEach(car => {
+        const dotColor = COLOR_MAP[car.color] || COLOR_MAP.unknown;
+        const confPct = Math.round(car.confidence * 100);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>#${car.id}</strong></td>
+          <td>${capitalize(car.class)}</td>
+          <td>
+            <div class="color-dot">
+              <span class="dot" style="background:${dotColor}"></span>
+              ${capitalize(car.color)}
+            </div>
+          </td>
+          <td><span class="plate-badge">${car.plate}</span></td>
+          <td>
+            <div class="conf-bar">
+              <div class="conf-track">
+                <div class="conf-fill" style="width:${confPct}%"></div>
+              </div>
+              <span style="font-size:0.78rem;color:var(--muted);font-family:var(--mono)">${confPct}%</span>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No vehicles detected</td></tr>';
+    }
+
+    document.getElementById('download-img-btn').href = `/download/${data.annotated_filename}`;
+    document.getElementById('download-csv-btn').href = `/download/${data.csv_filename}`;
+
+    resultsEl.style.display = 'block';
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function capitalize(s) {
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  }
+</script>
+</body>
+</html>
