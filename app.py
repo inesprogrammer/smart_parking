@@ -144,7 +144,7 @@ def download_file(filename):
 
 
 if __name__ == "__main__":
-    logger.info("Starting Smart Parking Web App at http://localhost:5000")
-    # Pre-load the detector at startup to avoid delay on first request
+    logger.info("Starting Smart Parking Web App...")
     get_detector()
-    app.run(debug=False, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
