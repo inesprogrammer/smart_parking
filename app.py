@@ -50,8 +50,17 @@ for folder in [app.config["UPLOAD_FOLDER"], app.config["RESULTS_FOLDER"]]:
     Path(folder).mkdir(parents=True, exist_ok=True)
 
 # Global detector (loaded once)
+# Global detector (loaded once)
 detector = None
 
+# Pre-load on startup
+def initialize():
+    global detector
+    if detector is None:
+        logger.info("Pre-loading models...")
+        detector = ParkingDetector(model_path="yolov8n.pt", total_spaces=10)
+
+initialize()
 
 def get_detector():
     global detector
