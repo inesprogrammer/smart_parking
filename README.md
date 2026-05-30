@@ -1,9 +1,24 @@
 # 🅿️ Smart Parking System
 
 An intelligent parking lot analysis system using **YOLOv8**, **EasyOCR**, and **OpenCV**.  
-Upload a parking lot image → get car count, license plates, car colors, and free space count.
 
----
+## Features
+- Real-time parking detection
+- Visual parking map (green/red slots)
+- Automatic slot assignment (P-01, P-02...)
+- Entry time tracking
+- Full parking history table
+- Reset system
+- Live refresh
+
+## Tech Stack
+- Python
+- Flask
+- OpenCV
+- YOLOv8
+- EasyOCR
+
+
 
 ## 📁 Project Structure
 
