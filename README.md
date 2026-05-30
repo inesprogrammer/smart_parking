@@ -1,285 +1,233 @@
-# 🅿️ Smart Parking System
+# 🧠 Deep Mind Manager
+### Intelligent Parking System powered by Deep Learning
 
-An intelligent parking lot analysis system using **YOLOv8**, **EasyOCR**, and **OpenCV**.  
-
-## Features
-- Real-time parking detection
-- Visual parking map (green/red slots)
-- Automatic slot assignment (P-01, P-02...)
-- Entry time tracking
-- Full parking history table
-- Reset system
-- Live refresh
-
-## Tech Stack
-- Python
-- Flask
-- OpenCV
-- YOLOv8
-- EasyOCR
-
-
-
-## 📁 Project Structure
-
-```
-smart_parking/
-│
-├── main.py                     ← CLI entry point (run images from terminal)
-├── app.py                      ← Flask web interface (bonus)
-├── generate_test_images.py     ← Generates synthetic test images
-├── requirements.txt
-│
-├── parking_system/             ← Core Python package
-│   ├── __init__.py
-│   ├── detector.py             ← Main orchestrator (YOLO + color + plate)
-│   ├── color_detector.py       ← Car color detection (HSV analysis)
-│   ├── plate_detector.py       ← License plate region detection + OCR
-│   ├── dataset.py              ← Image loading and preprocessing
-│   └── exporter.py             ← CSV export + console reporting
-│
-├── templates/
-│   └── index.html              ← Flask web UI
-│
-├── static/
-│   ├── uploads/                ← Web uploads (auto-created)
-│   └── results/                ← Web results (auto-created)
-│
-├── dataset/
-│   └── sample_images/          ← Put your parking lot images here
-│
-└── results/                    ← Output: annotated images + CSV (auto-created)
-    └── annotated/
-```
+[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://python.org)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-blue.svg)](https://ultralytics.com)
+[![Flask](https://img.shields.io/badge/Flask-3.0-blue.svg)](https://flask.palletsprojects.com)
+[![EasyOCR](https://img.shields.io/badge/EasyOCR-1.7-blue.svg)](https://github.com/JaidedAI/EasyOCR)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-blue.svg)](https://smart-parking-u3xs.onrender.com)
 
 ---
 
-## ⚙️ Requirements
+## 🌐 Live Demo
 
-- Python 3.9 or higher
-- pip
-
----
-
-## 🚀 Setup — Step by Step
-
-### 1. Clone / download the project
-
-```bash
-# If you have git:
-git clone <your-repo-url>
-cd smart_parking
-
-# Or just unzip and cd into the folder
-```
-
-### 2. Create a virtual environment (recommended)
-
-```bash
-python -m venv venv
-
-# Windows:
-venv\Scripts\activate
-
-# macOS/Linux:
-source venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-> ⚠️ **Note:** Installing may take a few minutes.  
-> EasyOCR will download language model files (~200 MB) on first run.  
-> YOLOv8 (`yolov8n.pt`, ~6 MB) auto-downloads on first run.
-
-### 4. Add your images
-
-Place your parking lot `.jpg` or `.png` images in:
-```
-dataset/sample_images/
-```
-
-**No images yet?** Generate synthetic test images:
-```bash
-python generate_test_images.py
-```
+> **[https://smart-parking-u3xs.onrender.com](https://smart-parking-u3xs.onrender.com)**
 
 ---
 
-## ▶️ Running the System
+## 📋 Overview
 
-### Option A — Command Line
+**Deep Mind Manager** is an intelligent parking management system that uses **Deep Learning** and **Computer Vision** to automatically:
 
-```bash
-# Basic: process all images in a folder
-python main.py --input dataset/sample_images
-
-# Specify total parking spaces (default: 10)
-python main.py --input dataset/sample_images --spaces 20
-
-# Process a single image
-python main.py --input dataset/sample_images/parking_01.jpg
-
-# Save results as CSV + don't open display window
-python main.py --input dataset/sample_images --save-csv --no-display
-
-# Full example with all options
-python main.py \
-  --input dataset/sample_images \
-  --spaces 15 \
-  --save-csv \
-  --output-dir results \
-  --model yolov8n.pt
-```
-
-**All CLI options:**
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--input` | *(required)* | Image file or folder path |
-| `--spaces` | `10` | Total parking spaces in the lot |
-| `--model` | `yolov8n.pt` | YOLOv8 model weights file |
-| `--output-dir` | `results` | Where to save outputs |
-| `--save-csv` | `False` | Save detections to CSV |
-| `--save-images` | `True` | Save annotated images |
-| `--no-display` | `False` | Skip OpenCV display window |
-| `--width` | `1280` | Max image width for processing |
-
----
-
-### Option B — Web Interface (Flask)
-
-```bash
-python app.py
-```
-
-Then open your browser at: **http://localhost:5000**
-
-Features:
-- 📷 Drag-and-drop image upload
-- 🔢 Configurable total spaces
-- 🖼️ Annotated output image with bounding boxes
-- 📊 Stats: occupied, free, total
-- 🎨 Color + plate table per vehicle
-- ⬇️ Download annotated image + CSV
-
----
-
-## 📤 Sample Output
-
-**Console:**
-```
-============================================================
-  SMART PARKING SYSTEM — DETECTION REPORT
-  Image: parking_lot_01.jpg
-============================================================
-  🚗  Cars detected      : 5
-  🟢  Free spaces        : 5
-  🔴  Occupied spaces    : 5
-  📊  Total spaces       : 10
-------------------------------------------------------------
-  ID    Color        Plate           Type         Conf
-  ---- ----------- -------------- ------------ -----
-  1     blue         AB123CD        car          0.87
-  2     white        XY456ZZ        car          0.91
-  3     red          QR789TU        car          0.83
-  ...
-============================================================
-```
-
-**Files produced:**
-```
-results/
-  annotated/
-    parking_lot_01_annotated.jpg   ← image with bounding boxes
-  parking_results.csv              ← detection data
-```
-
-**CSV columns:**
-`timestamp, image_filename, car_id, color, plate, confidence, total_cars, occupied_spaces, free_spaces`
+- 🚗 Detect vehicles in parking lot images using **YOLOv8**
+- 🎨 Identify the **dominant color** of each car
+- 🔤 Read **license plate numbers** using **EasyOCR**
+- 🅿️ Track **occupied and free parking spaces** in real time
+- 📊 Maintain a **persistent history** of all parked cars
+- 🗺️ Display a **visual parking map**
 
 ---
 
 ## 🧠 How It Works
 
 ```
-Image input
-    │
-    ▼
-YOLOv8 Object Detection
-    │  Detects all vehicles (car, truck, bus, motorcycle)
-    │  Returns bounding boxes + class + confidence
-    │
-    ▼
-Per-vehicle pipeline
-    ├── Color Detector
-    │     Convert crop to HSV → match against color ranges
-    │     Returns: "blue", "red", "white", etc.
-    │
-    └── Plate Detector + OCR
-          Edge detection → contour filtering → find rectangles
-          EasyOCR on best candidate region
-          Returns: plate text + bounding box
-    │
-    ▼
-Annotated image + CSV export + console report
+📷 Image Input
+      │
+      ▼
+🧠 YOLOv8 (Deep Learning CNN)
+      │  Detects all vehicles with bounding boxes
+      │
+      ▼
+🎨 Color Detector (Computer Vision - HSV)
+      │  Identifies dominant car color
+      │
+      ▼
+🔤 EasyOCR (Deep Learning CNN + LSTM)
+      │  Reads license plate text
+      │
+      ▼
+🗃️ SQLite Database
+      │  Stores: plate, color, time, place
+      │
+      ▼
+🌐 Flask Web Interface
+      Displays: annotated image + table + map
 ```
 
 ---
 
-## 🎨 Detected Colors
+## 🛠️ Technologies Used
 
-The system recognizes: `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`, `white`, `gray`, `black`
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Python** | 3.11 | Core programming language |
+| **YOLOv8** (Ultralytics) | 8.x | Vehicle detection (Deep Learning) |
+| **EasyOCR** | 1.7 | License plate recognition (Deep Learning) |
+| **OpenCV** | 4.8 | Image processing and annotation |
+| **Flask** | 3.0 | Web interface |
+| **SQLite** | Built-in | Persistent parking database |
+| **NumPy** | 1.24 | Array and matrix operations |
+| **Pillow** | 10.0 | Image format support |
 
 ---
 
-## 🔧 Customization
+## 📁 Project Structure
 
-**Change total spaces:** Pass `--spaces N` to CLI or set in the web form.
+```
+smart_parking/
+│
+├── app.py                          ← Flask web app (main entry point)
+├── main.py                         ← CLI entry point
+├── requirements.txt                ← Python dependencies
+├── runtime.txt                     ← Python version for deployment
+├── README.md                       ← This file
+│
+├── parking_system/                 ← Core AI package
+│   ├── __init__.py
+│   ├── detector.py                 ← YOLOv8 orchestrator
+│   ├── color_detector.py           ← HSV color detection
+│   ├── plate_detector.py           ← License plate OCR
+│   ├── dataset.py                  ← Image loading & preprocessing
+│   └── exporter.py                 ← CSV export & reporting
+│
+├── templates/
+│   └── index.html                  ← Web interface (HTML/CSS/JS)
+│
+├── static/
+│   ├── uploads/                    ← Uploaded images
+│   └── results/                    ← Annotated output images
+│
+└── dataset/
+    └── sample_images/              ← Test parking images
+```
 
-**Use a larger YOLOv8 model** (more accurate, slower):
+---
+
+## ⚙️ Requirements
+
+- Python 3.11+
+- pip
+
+---
+
+## 🚀 Installation & Running
+
+### 1. Clone the repository
+
 ```bash
-python main.py --input dataset/sample_images --model yolov8s.pt
+git clone https://github.com/inesprogrammer/smart_parking.git
+cd smart_parking
 ```
-Available: `yolov8n.pt` (nano), `yolov8s.pt` (small), `yolov8m.pt` (medium)
 
-**GPU acceleration** — If you have an NVIDIA GPU with CUDA:
+### 2. Create virtual environment
+
 ```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS / Linux
+python -m venv venv
+source venv/bin/activate
 ```
-YOLO and EasyOCR will automatically use GPU.
+
+### 3. Install dependencies
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+> ⏳ First install takes 5-10 minutes (downloads PyTorch, YOLOv8, EasyOCR models)
+
+### 4. Run the web interface
+
+```bash
+python app.py
+```
+
+Open your browser at: **http://localhost:5000**
+
+### 5. OR run via command line
+
+```bash
+# Process a folder of images
+python main.py --input dataset/sample_images --spaces 30 --save-csv
+
+# Process a single image
+python main.py --input path/to/parking.jpg
+```
 
 ---
 
-## 🐛 Troubleshooting
+## 📤 Output
 
-| Issue | Fix |
-|-------|-----|
-| `ModuleNotFoundError: ultralytics` | Run `pip install ultralytics` |
-| `ModuleNotFoundError: easyocr` | Run `pip install easyocr` |
-| First run is slow | EasyOCR + YOLO download models — wait ~1 min |
-| No cars detected | Try a clearer/closer image, or lower confidence threshold in `detector.py` |
-| OCR shows "N/A" | Plate may not be visible; this is expected for side/rear angle shots |
-| Flask port in use | Change port in `app.py`: `app.run(port=5001)` |
+### Web Interface
+- 🖼️ Annotated image with bounding boxes, colors, plate numbers
+- 📊 Real-time statistics: Total / Occupied / Free spaces
+- 🗺️ Visual parking map (green = free, red = occupied)
+- 📋 Table of all parked cars with entry time and place
+- ⬇️ Download annotated image and CSV
+
+### Console Output
+```
+============================================================
+  DEEP MIND MANAGER — DETECTION REPORT
+============================================================
+  Cars detected      : 7
+  Free spaces        : 23
+  Occupied spaces    : 7
+  Total spaces       : 30
+------------------------------------------------------------
+  ID    Color        Plate           Type         Conf
+  1     gray         N/A             car          0.91
+  2     black        N/A             car          0.88
+  7     red          11CY SS78       car          0.85
+============================================================
+```
+
+### CSV File Columns
+| Column | Description |
+|--------|-------------|
+| `entry_time` | Date and time of entry |
+| `place` | Assigned parking spot (P-01, P-02...) |
+| `plate` | License plate text (OCR) |
+| `color` | Detected car color |
+| `confidence` | YOLO detection confidence (0-1) |
 
 ---
 
-## 📦 Libraries Used
+## 🎯 Features
 
-| Library | Purpose |
-|---------|---------|
-| `ultralytics` | YOLOv8 object detection |
-| `easyocr` | License plate text recognition |
-| `opencv-python` | Image loading, drawing, preprocessing |
-| `numpy` | Array operations |
-| `flask` | Web interface |
-| `Pillow` | Image format support |
+| Feature | Description |
+|---------|-------------|
+| ✅ **Multi-car tracking** | Each uploaded image adds cars to history |
+| ✅ **Persistent storage** | SQLite database keeps all records |
+| ✅ **Auto place assignment** | Cars get P-01, P-02... automatically |
+| ✅ **Visual parking map** | 30-space grid with live status |
+| ✅ **Color detection** | 10 colors: red, blue, white, black, gray... |
+| ✅ **License plate OCR** | Reads plates from front/rear view images |
+| ✅ **Reset function** | Clear all cars and reset parking |
+| ✅ **CSV export** | Download complete parking history |
 
 ---
 
-## 📝 License
+## ⚠️ Limitations
+
+- License plate OCR works best on **front/rear view** images with visible plates
+- YOLOv8 pre-trained model may miss cars in **extreme top-down** aerial views
+- First request after inactivity takes **~30 seconds** to wake up (free hosting)
+
+---
+
+## 🔧 Configuration
+
+Change total parking spaces in `app.py`:
+```python
+TOTAL_SPACES = 30  # Change this value
+```
+
+---
+
+## 📄 License
 
 This project is for educational and research purposes.
