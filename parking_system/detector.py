@@ -143,7 +143,7 @@ class ParkingDetector:
         cv2.rectangle(image, (swatch_x, swatch_y), (swatch_x + 16, swatch_y + 16), (255, 255, 255), 1)
 
         # Label background
-        label = f"#{car_id} | {color_name} | {plate}"
+        label = f"{color_name} | {plate}"
         (lw, lh), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         label_bg_y1 = max(y1 - lh - baseline - 6, 0)
         cv2.rectangle(image, (x1, label_bg_y1), (x1 + lw + 6, y1), (0, 0, 0), -1)
