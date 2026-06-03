@@ -1,5 +1,6 @@
 """
 plate_detector.py - Fast OCR, optimized for speed
+Accepts license plates with spaces and dashes e.g. "AB 123 CD", "11CY SS78"
 """
 
 import cv2
@@ -11,9 +12,20 @@ logger = logging.getLogger(__name__)
 
 
 def clean_plate(text):
-    cleaned = re.sub(r"[^A-Z0-9 ]", "", text.upper().strip())
+    """
+    Clean OCR output and validate as a license plate.
+    Accepts plates with spaces and dashes e.g. "AB 123 CD", "11CY SS78"
+    """
+    # Keep letters, numbers, spaces and dashes only
+    cleaned = re.sub(r"[^A-Z0-9 \-]", "", text.upper().strip())
+    # Normalize multiple spaces to single space
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
-    return cleaned if len(cleaned.replace(" ", "")) >= 3 else ""
+    # Count only alphanumeric characters (ignore spaces and dashes)
+    alphanum = cleaned.replace(" ", "").replace("-", "")
+    # Accept if at least 3 alphanumeric characters
+    if len(alphanum) >= 3:
+        return cleaned  # Return WITH spaces preserved
+    return ""
 
 
 def detect_and_read_plate(vehicle_crop, ocr_reader):
@@ -64,7 +76,9 @@ def detect_and_read_plate(vehicle_crop, ocr_reader):
                 continue
 
         # Early exit if good result found
-        if best_conf > 0.5 and len(best_text.replace(" ", "")) >= 4:
+        # Count only alphanumeric characters for length check
+        alphanum_len = len(best_text.replace(" ", "").replace("-", ""))
+        if best_conf > 0.5 and alphanum_len >= 4:
             break
 
     result = best_text.upper().strip() if best_text else "N/A"
