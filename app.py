@@ -164,7 +164,7 @@ def analyze():
 
         det = get_detector()
         det.total_spaces = TOTAL_SPACES
-        result = det.detect(image)
+        result = det.detect(image, db_occupied=occupied)
 
         # Save annotated image
         annotated = result["annotated_image"]
