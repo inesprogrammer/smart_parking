@@ -2,7 +2,7 @@
 color_detector.py
 -----------------
 Detects the dominant color of a cropped car image using HSV color space.
-Fixed: gray vs black distinction improved.
+Fixed: white vs gray vs black distinction improved.
 """
 
 import cv2
@@ -26,12 +26,11 @@ COLOR_RANGES = [
     ("purple", np.array([131, 60,  60]),  np.array([160, 255, 255]), (180, 0,   180)),
     # Pink
     ("pink",   np.array([161, 60,  60]),  np.array([169, 255, 255]), (180, 105, 255)),
-    # White — very low saturation, very high value
-    ("white",  np.array([0,   0,   210]), np.array([180, 35,  255]), (245, 245, 245)),
-    # Gray — low saturation, MEDIUM-HIGH value (80-210)
-    # This is the key fix: gray has higher V than black
-    ("gray",   np.array([0,   0,   80]),  np.array([180, 45,  210]), (150, 150, 150)),
-    # Black — very low value (below 80) AND low saturation
+    # White — very low saturation, high value (lowered to 180 to catch more whites)
+    ("white", np.array([0, 0, 150]), np.array([180, 60, 255]), (245, 245, 245)),
+    # Gray — low saturation, MEDIUM value (80-180)
+    ("gray",   np.array([0,   0,   80]),  np.array([180, 45,  180]), (150, 150, 150)),
+    # Black — very low value (below 80)
     ("black",  np.array([0,   0,   0]),   np.array([180, 80,  79]),  (30,  30,  30)),
 ]
 
@@ -70,15 +69,27 @@ def detect_car_color(car_crop: np.ndarray) -> tuple:
         count = cv2.countNonZero(mask)
         color_scores[name] = color_scores.get(name, 0) + count
 
-    # --- Gray vs Black disambiguation ---
-    # Calculate average brightness (V channel) of the ROI
+    # Calculate average brightness and saturation
     avg_v = np.mean(hsv_small[:, :, 2])
+    avg_s = np.mean(hsv_small[:, :, 1])
 
-    # If best color is black but average brightness > 80 → it's actually gray
     best_color = max(color_scores, key=color_scores.get)
-    if best_color == "black" and avg_v > 80:
+
+    # --- White vs Gray vs Black disambiguation ---
+
+    # If detected gray but brightness is high → it's white
+    if best_color == "gray" and avg_v > 100:
+        best_color = "white"
+
+    # If detected white but brightness is not high enough → it's gray
+    elif best_color == "white" and avg_v < 120:
         best_color = "gray"
-    # If best color is gray but average brightness < 60 → it's actually black
+
+    # If detected black but brightness > 80 → it's gray
+    elif best_color == "black" and avg_v > 80:
+        best_color = "gray"
+
+    # If detected gray but brightness < 60 → it's black
     elif best_color == "gray" and avg_v < 60:
         best_color = "black"
 

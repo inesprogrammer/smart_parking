@@ -178,15 +178,17 @@ def analyze():
         new_occupied = occupied
 
         for car in result.get("cars", []):
-            new_occupied += 1
-            place = f"P-{new_occupied:02d}"
-            add_car(
-                entry_time=entry_time,
-                place=place,
-                plate=car.get("plate", "N/A"),
-                color=car.get("color", "unknown"),
-                confidence=round(car.get("confidence", 0.0), 2)
-            )
+          new_occupied += 1
+          place = f"P-{new_occupied:02d}"
+          # Update car id to cumulative number
+          car["id"] = new_occupied
+          add_car(
+             entry_time=entry_time,
+             place=place,
+              plate=car.get("plate", "N/A"),
+            color=car.get("color", "unknown"),
+           confidence=round(car.get("confidence", 0.0), 2)
+        )
 
         total_occupied = get_occupied_count()
         free = max(0, TOTAL_SPACES - total_occupied)

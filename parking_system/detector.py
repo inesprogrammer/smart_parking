@@ -1,5 +1,5 @@
 """
-detector.py - Fixed car ID to show cumulative number on image
+detector.py - No ID displayed, only color and plate
 """
 
 import cv2
@@ -56,8 +56,6 @@ class ParkingDetector:
         logger.info(f"Detected {len(detected_vehicles)} vehicle(s).")
 
         # Step 2: Per-vehicle analysis
-        # db_occupied is the count BEFORE this upload
-        # So first new car = db_occupied + 1
         start_id = (db_occupied if db_occupied is not None else 0)
 
         for i, vehicle in enumerate(detected_vehicles):
@@ -69,11 +67,8 @@ class ParkingDetector:
             color_name, color_bgr = detect_car_color(vehicle_crop)
             plate_text, plate_bbox = detect_and_read_plate(vehicle_crop, self.ocr_reader)
 
-            # Cumulative ID — starts from db_occupied + 1
-            cumulative_id = start_id + i + 1
-
             car_info = {
-                "id": cumulative_id,
+                "id": start_id + i + 1,
                 "bbox": vehicle["bbox"],
                 "class": vehicle["class"],
                 "confidence": round(vehicle["confidence"], 2),
@@ -102,7 +97,6 @@ class ParkingDetector:
 
     def _draw_vehicle_box(self, image, car_info, color_bgr, plate_bbox, vehicle_offset):
         x1, y1, x2, y2 = car_info["bbox"]
-        car_id = car_info["id"]
         plate = car_info["plate"]
         color_name = car_info["color"]
 
@@ -115,8 +109,8 @@ class ParkingDetector:
         cv2.rectangle(image, (swatch_x, swatch_y), (swatch_x + 16, swatch_y + 16), color_bgr, -1)
         cv2.rectangle(image, (swatch_x, swatch_y), (swatch_x + 16, swatch_y + 16), (255, 255, 255), 1)
 
-        # Label with cumulative ID
-        label = f"#{car_id} | {color_name} | {plate}"
+        # Label — only color and plate, NO id
+        label = f"{color_name} | {plate}"
         (lw, lh), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         label_bg_y1 = max(y1 - lh - baseline - 6, 0)
         cv2.rectangle(image, (x1, label_bg_y1), (x1 + lw + 6, y1), (0, 0, 0), -1)
